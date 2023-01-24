@@ -1,0 +1,37 @@
+[ec2-user@ip-10-1-10-222 ~]$ mysql -h database-1.c2tcy4t9mnv5.us-east-1.rds.amazonaws.com -u admin -p
+Enter password: 
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MySQL connection id is 36
+Server version: 8.0.23 Source distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MySQL [(none)]> create table students (ID int PRIMARY KEY, FirstName varchar(255), LastName varchar(255), Age int UNSIGNED);
+ERROR 1046 (3D000): No database selected
+MySQL [(none)]> CREATE DATABASE classdata;
+Query OK, 1 row affected (0.01 sec)
+
+MySQL [(none)]> USE classdata;
+Database changed
+MySQL [classdata]> create table students (ID int PRIMARY KEY, FirstName varchar(255), LastName varchar(255), Age int UNSIGNED);
+Query OK, 0 rows affected (0.05 sec)
+
+MySQL [classdata]> insert into students values(1, 'Joe', 'Bloggs', 19);
+Query OK, 1 row affected (0.01 sec)
+
+MySQL [classdata]> insert into students values(2, 'Susan', 'Smith', 18);
+Query OK, 1 row affected (0.00 sec)
+
+MySQL [classdata]> select * from students;
++----+-----------+----------+------+
+| ID | FirstName | LastName | Age  |
++----+-----------+----------+------+
+|  1 | Joe       | Bloggs   |   19 |
+|  2 | Susan     | Smith    |   18 |
++----+-----------+----------+------+
+2 rows in set (0.00 sec)
+
+MySQL [classdata]> 
+

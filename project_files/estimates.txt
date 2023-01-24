@@ -1,0 +1,78 @@
+Recovery Time Objective (RTO) and Recovery Point Objective (RPO)
+================================================================
+
+Architecture
+------------
+- Databases are MySQL
+- Primary Region has a master DB instance and a standby DB instance in a different AZ.
+  This provides high availability and data redundancy, but the standby DB instance doesn't support connections for read workloads.
+- Secondary Region has a read replica, again with a master DB instance and a standby DB instance in a different AZ.
+
+Assumptions
+-----------
+- Infrastructure is actively monitored 24x7.
+- Remote technical support is available 24x7.
+- Established playbooks are in place for incident management.
+- The infrastructure is tightly version-controlled using Infrastructure-as-Code with monitoring in place for configuration drift
+- Security logging is in place.
+
+Recovery Time Objectives (RTOs)
+-------------------------------
+1. Minimum RTO for a single AZ outage - 30 minutes
+
+   - Illustrative Timeline:
+     00:00 - Outage occurs.
+     00:05 - Elapsed time until an alert triggers (5 minutes).
+     00:20 - On-call staff respond to alert and log on remotely (15 minutes).
+     00:30 - On-call staff start diagnosing issue.
+             Root cause is discovered to be the AZ outage.
+             RDS is found to have already recovered the database by automatically failing over to the standby instance.
+             The immediate incident resolution is complete.
+             (10 minutes).
+
+2. Minimum RTO for a single region outage - 60 minutes
+
+   - For a region outage, manual failover is required.
+   - Assuming the failure is in the Primary Region, the read replica in the Secondary Region must be promoted to be the new master.
+   - Network traffic will need to be re-routed to the new endpoint in the Secondary Region.
+
+   - Illustrative Timeline:
+     00:00 - Outage occurs.
+     00:05 - Elapsed time until an alert triggers (5 minutes).
+     00:20 - On-call staff respond to alert and log on remotely (15 minutes).
+     00:30 - On-call staff start diagnosing issue (10 minutes).
+     00:40 - Root cause is discovered to be the region outage (10 minutes).
+     00:45 - Remediation started (5 minutes).
+     01:00 - Remediation completed following runbook:
+             - Promoted read replica to be the new master.
+             - Re-route traffic.
+             (15 minutes).
+
+
+Recovery Point Objectives (RPOs)
+--------------------------------
+1. Minimum RPO for a single AZ outage - 10 minutes
+
+   - Fail over is handled automatically by RDS in a few minutes.
+   - As the read replica and master database were synchronized before the outage, the data loss is very small.
+   - Data loss is assumed to be a few (<10) minutes until RDS recovery completes.
+
+2. Minimum RPO for a single region outage - 70 minutes
+
+   - Recovery requires manual failover by promoting the read replica to be the new master.
+   - RPO is the sum of the manual recovery time (i.e. RTO) and any addition data loss caused by Replica Lag.
+   - Replica Lag is the amount of time that the replica is behind the source database.
+   - Adding 10 minutes for Replica Lag to the RTO time of 60 minutes gives an RPO of 70 minutes.
+
+
+
+
+
+
+
+
+
+Definitions
+-----------
+Recovery Time Objective (RTO) - time that the application can be down for a given incident.
+Recover Point Objective (RPO) - how much time for which data can be lost.
